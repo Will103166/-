@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>大字版重量換算</title>
+
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-body: #f3f4f6;
+  --bg-card: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --highlight-color: #2563eb; /* 亮藍 */
+  --highlight-light: #eff6ff;
+  --border-color: #d1d5db;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  padding: 16px;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding-bottom: 40px; /* 底部留白 */
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin: 10px 0 25px 0;
+  color: var(--text-primary);
+}
+
+/* ===== 輸入區塊 ===== */
+.input-section {
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+label {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.label-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+}
+
+input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background-color: #fff;
+  color: #000;
+  outline: none;
+  font-family: 'Roboto Mono', monospace;
+}
+
+input:focus {
+  border-color: var(--highlight-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* 單位按鈕 */
+.unit-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.unit-group button {
+  flex: 1;
+  padding: 14px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+  background: #fff;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.unit-group button.active {
+  background: var(--highlight-color);
+  color: #fff;
+  border-color: var(--highlight-color);
+}
+
+/* ===== 結果顯示區 (分開的卡片) ===== */
+.result-container {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+
+.result-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  border-left: 8px solid var(--highlight-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 不同單位的色條 */
+.card-kg { border-left-color: #2563eb; } /* 藍 */
+.card-jin { border-left-color: #ea580c; } /* 橘 */
+.card-g { border-left-color: #059669; } /* 綠 */
+
+.res-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.res-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  color: #000000;
+}
+
+/* 初始提示文字 */
+.placeholder {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #9ca3af;
+  padding: 40px;
+  background: #e5e7eb;
+  border-radius: 16px;
+  width: 100%;
+}
+
+/* ===== 計算過程區塊 (帶小i) ===== */
+.process-box {
+  margin-top: 24px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  display: none; /* 預設隱藏 */
+}
+
+.process-header {
+  background: var(--highlight-light);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.process-header span {
+  font-weight: 700;
+  color: var(--highlight-color);
+  font-size: 1.1rem;
+}
+
+/* SVG Icon 設定 */
+.icon-i {
+  width: 24px;
+  height: 24px;
+  stroke: var(--highlight-color);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.process-content {
+  padding: 16px;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-family: 'Roboto Mono', monospace;
+  white-space: pre-wrap; /* 保留換行 */
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>⚖️ 價格換算</h1>
+
+  <div class="input-section">
+    <label>
+      <span class="label-text">輸入重量</span>
+      <input type="number" id="weight" placeholder="例如: 1.5" inputmode="decimal">
+    </label>
+
+    <label>
+      <span class="label-text">選擇單位</span>
+      <div class="unit-group">
+        <button data-unit="kg" class="active">公斤</button>
+        <button data-unit="g">公克</button>
+        <button data-unit="jin">台斤</button>
+      </div>
+    </label>
+
+    <label style="margin-bottom: 0;">
+      <span class="label-text">總價格 (元)</span>
+      <input type="number" id="price" placeholder="例如: 100" inputmode="decimal">
+    </label>
+  </div>
+
+  <div id="placeholder" class="placeholder">
+    請輸入數字<br>自動計算
+  </div>
+
+  <div class="result-container" id="resultContainer" style="display: none;">
+    
+    <div class="result-card card-kg">
+      <span class="res-label">1 公斤</span>
+      <span class="res-value" id="val-kg">--</span>
+    </div>
+
+    <div class="result-card card-jin">
+      <span class="res-label">1 台斤</span>
+      <span class="res-value" id="val-jin">--</span>
+    </div>
+
+    <div class="result-card card-g">
+      <span class="res-label">1 公克</span>
+      <span class="res-value" id="val-g" style="font-size: 1.5rem;">--</span>
+    </div>
+  </div>
+
+  <div class="process-box" id="processBox">
+    <div class="process-header">
+      <svg class="icon-i" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span>計算說明</span>
+    </div>
+    <div class="process-content" id="processContent"></div>
+  </div>
+
+</div>
+
+<script>
+// PWA Service Worker 註冊
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js');
+  });
+}
+
+const weightInput = document.getElementById('weight');
+const priceInput = document.getElementById('price');
+const resultContainer = document.getElementById('resultContainer');
+const placeholder = document.getElementById('placeholder');
+const processBox = document.getElementById('processBox');
+const processContent = document.getElementById('processContent');
+
+const valKg = document.getElementById('val-kg');
+const valJin = document.getElementById('val-jin');
+const valG = document.getElementById('val-g');
+
+let currentUnit = 'kg';
+
+// 綁定按鈕
+document.querySelectorAll('.unit-group button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.unit-group button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentUnit = btn.dataset.unit;
+    calculate();
+  });
+});
+
+function calculate() {
+  const weight = parseFloat(weightInput.value);
+  const price = parseFloat(priceInput.value);
+
+  // 驗證輸入
+  if (isNaN(weight) || isNaN(price) || weight <= 0) {
+    resultContainer.style.display = 'none';
+    processBox.style.display = 'none';
+    placeholder.style.display = 'block';
+    return;
+  }
+
+  // 顯示結果
+  placeholder.style.display = 'none';
+  resultContainer.style.display = 'grid';
+  processBox.style.display = 'block';
+
+  let unitName, gramFactor;
+  if (currentUnit === 'kg') { unitName = '公斤'; gramFactor = 1000; }
+  else if (currentUnit === 'g') { unitName = '公克'; gramFactor = 1; }
+  else { unitName = '台斤'; gramFactor = 600; }
+
+  const totalGrams = weight * gramFactor;
+  const pricePerGram = price / totalGrams;
+  
+  // 格式化：錢符號 + 千分位
+  const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmtSmall = (n) => '$' + n.toFixed(4);
+
+  valKg.textContent = fmt(pricePerGram * 1000);
+  valJin.textContent = fmt(pricePerGram * 600);
+  valG.textContent = fmtSmall(pricePerGram);
+
+  // 完整計算過程
+  processContent.textContent =
+`輸入條件：${weight} ${unitName} = ${price} 元
+
+1. 換算成總公克數：
+   ${weight} × ${gramFactor} = ${totalGrams} g
+
+2. 計算每公克單價：
+   ${price} ÷ ${totalGrams} ≈ ${pricePerGram.toFixed(5)} 元/g
+
+3. 各單位價格換算：
+   • 1 公斤 = ${pricePerGram.toFixed(5)} × 1000 = ${fmt(pricePerGram * 1000)}
+   • 1 台斤 = ${pricePerGram.toFixed(5)} × 600 = ${fmt(pricePerGram * 600)}`;
+}
+
+weightInput.addEventListener('input', calculate);
+priceInput.addEventListener('input', calculate);
+</script>
+</body>
+</html>
